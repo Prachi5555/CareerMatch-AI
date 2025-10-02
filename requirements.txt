@@ -2,3 +2,10 @@ streamlit
 pandas
 python-docx
 PyMuPDF
+transformers
+torch
+scikit-learn
+nltk
+spacy
+sentence-transformers
+mysql-connector-python

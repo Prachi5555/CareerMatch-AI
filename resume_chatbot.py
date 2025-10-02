@@ -3,7 +3,22 @@ import os
 import pandas as pd
 import re
 from resume_parser import extract_text_from_pdf, extract_text_from_docx
-from datetime import datetime
+# from free_ai_analyzer import FreeAIAnalyzer  # Temporarily disabled
+from datetime import datetime, date
+
+# Import database modules
+from auth import (
+    register_user, login_user, logout_user,
+    get_user_profile, update_user_profile, check_authentication
+)
+from resume_manager import (
+    save_resume, get_user_resumes, save_analysis,
+    get_analysis_history, get_resume_improvement_trends
+)
+from job_tracker import (
+    add_job_application, get_user_applications,
+    update_application_status, get_application_statistics
+)
 
 def extract_resume_data(raw_text):
     """Extract structured data from resume text"""
@@ -84,14 +99,22 @@ def extract_resume_data(raw_text):
             current_experience.append(line)
             
         elif current_section == "PROJECTS":
-            # Better project detection - look for project titles or bullet points
-            # Project titles usually end with '|' or ':' or are short lines
-            if (line.endswith('|') or line.endswith(':') or 
-                len(line) < 60 and any(keyword in line.lower() for keyword in ['project', 'app', 'website', 'system', 'platform', 'tool', 'dashboard', 'api', 'bot', 'game', 'website']) or
-                line.startswith('•') or line.startswith('-') or line.startswith('*')):
-                if current_project:  # Save previous project entry
-                    data['projects'].append(' '.join(current_project))
-                    current_project = []
+            # Detect new project: Look for project titles (short lines without bullet points)
+            # or lines that end with | or : which typically indicate project names
+            is_new_project = False
+            
+            # Check if it's a project title (not a bullet point)
+            if not (line.startswith('•') or line.startswith('-') or line.startswith('*') or line.startswith('○')):
+                # Check if it looks like a title (ends with | or :, or contains "Project" keyword)
+                if (line.endswith('|') or line.endswith(':') or 
+                    ('project' in line.lower() and len(line) < 80)):
+                    is_new_project = True
+            
+            if is_new_project and current_project:
+                # Save previous project
+                data['projects'].append(' '.join(current_project))
+                current_project = []
+            
             current_project.append(line)
             
         elif current_section == "CERTIFICATIONS":
@@ -437,16 +460,66 @@ def generate_improvement_suggestions(resume_data, job_description, gaps):
     return suggestions
 
 def chatbot_response(user_message, resume_data, job_description, job_requirements):
-    """Generate chatbot response based on user message and context"""
+    """Generate enhanced chatbot response with AI features"""
+    
+    # Initialize AI analyzer
+    if 'ai_analyzer' not in st.session_state:
+        st.session_state.ai_analyzer = FreeAIAnalyzer()
     
     # Analyze resume gaps
     gaps = analyze_resume_gaps(resume_data, job_description, job_requirements)
     suggestions = generate_improvement_suggestions(resume_data, job_description, gaps)
     selection_probability = calculate_selection_probability(resume_data, job_requirements, gaps)
     
-    # Common user questions and responses
+    # Get AI-powered analysis
+    ai_analysis = st.session_state.ai_analyzer.advanced_resume_analysis(
+        ' '.join([str(v) for v in resume_data.values() if isinstance(v, (str, list))]),
+        job_description
+    )
+    
+    # Try AI-powered response first
+    try:
+        ai_response = st.session_state.ai_analyzer.enhanced_chatbot_response(
+            user_message, resume_data, job_requirements
+        )
+        
+        # Add AI insights
+        ai_insights = st.session_state.ai_analyzer.generate_ai_insights(resume_data, job_requirements)
+        
+        # Combine AI response with insights
+        enhanced_response = f"{ai_response}\n\n"
+        if ai_insights:
+            enhanced_response += "🎯 **AI Insights:**\n"
+            for insight in ai_insights[:3]:
+                enhanced_response += f"• {insight}\n"
+        
+        return enhanced_response
+        
+    except Exception as e:
+        st.warning(f"AI response failed: {str(e)}")
+        # Fallback to original logic
+    
+    # Common user questions and responses (fallback)
     if "improve" in user_message.lower() or "better" in user_message.lower():
-        response = "🔍 **Resume Improvement Analysis:**\n\n"
+        response = "🔍 **Enhanced Resume Analysis:**\n\n"
+        
+        # Add AI analysis results
+        response += f"📊 **AI Similarity Score: {ai_analysis['similarity_score']:.1f}%**\n\n"
+        
+        if ai_analysis['missing_keywords']:
+            response += f"⚠️ **Missing Keywords:** {', '.join(ai_analysis['missing_keywords'][:5])}\n\n"
+        
+        if ai_analysis['strengths']:
+            response += "✅ **Strengths:**\n"
+            for strength in ai_analysis['strengths']:
+                response += f"• {strength}\n"
+            response += "\n"
+        
+        if ai_analysis['improvements']:
+            response += "🔧 **AI Suggestions:**\n"
+            for improvement in ai_analysis['improvements']:
+                response += f"• {improvement}\n"
+            response += "\n"
         
         if suggestions:
             response += "**Priority Improvements:**\n"
@@ -526,7 +599,7 @@ def chatbot_response(user_message, resume_data, job_description, job_requirement
         response += "• **Proofread carefully** for errors\n\n"
         response += "Ask me specific questions like 'Will I be selected?' or 'Give me an honest review' for detailed feedback! 🎯"
         return response
-
+#jo user upload krta vo memory me hoti h use computr me temp file banate hai wb->write binary (binary mode me file banata hai)
 def process_resume_file(uploaded_file):
     """Process uploaded resume file"""
     try:
@@ -555,6 +628,105 @@ def process_resume_file(uploaded_file):
 
 # Streamlit UI
 st.set_page_config(page_title="ResumePro Analyzer", page_icon="📊", layout="wide")
+
+# ============================================================================
+# AUTHENTICATION CHECK
+# ============================================================================
+def show_login_page():
+    """Show login/register page"""
+    st.markdown('<div class="main-header"><h1>🔐 ResumePro AI Analyzer</h1><p>Login or Register to Continue</p></div>', unsafe_allow_html=True)
+    
+    tab1, tab2 = st.tabs(["Login", "Register"])
+    
+    with tab1:
+        st.subheader("Login to Your Account")
+        with st.form("login_form"):
+            email = st.text_input("Email", placeholder="your.email@example.com")
+            password = st.text_input("Password", type="password")
+            submit = st.form_submit_button("Login", use_container_width=True)
+            
+            if submit:
+                if not email or not password:
+                    st.error("Please fill in all fields")
+                else:
+                    success, result = login_user(email, password)
+                    if success:
+                        st.session_state['user'] = result
+                        st.success("✅ Login successful!")
+                        st.rerun()
+                    else:
+                        st.error(f"❌ {result}")
+    
+    with tab2:
+        st.subheader("Create New Account")
+        with st.form("register_form"):
+            col1, col2 = st.columns(2)
+            with col1:
+                reg_name = st.text_input("Full Name", placeholder="John Doe")
+                reg_email = st.text_input("Email", placeholder="your.email@example.com")
+            with col2:
+                reg_phone = st.text_input("Phone (Optional)", placeholder="+1234567890")
+                reg_password = st.text_input("Password", type="password")
+            
+            reg_submit = st.form_submit_button("Register", use_container_width=True)
+            
+            if reg_submit:
+                if not reg_name or not reg_email or not reg_password:
+                    st.error("Please fill in required fields (Name, Email, Password)")
+                elif len(reg_password) < 6:
+                    st.error("Password must be at least 6 characters")
+                else:
+                    success, message = register_user(reg_email, reg_password, reg_name, reg_phone)
+                    if success:
+                        st.success(f"✅ {message} Please login to continue.")
+                    else:
+                        st.error(f"❌ {message}")
+
+# Check if user is authenticated
+if not check_authentication():
+    show_login_page()
+    st.stop()
+
+# User is authenticated - show logout button in sidebar
+with st.sidebar:
+    st.write(f"**👤 {st.session_state['user']['full_name']}**")
+    st.write(f"_{st.session_state['user']['email']}_")
+    if st.button("🚪 Logout", use_container_width=True):
+        logout_user(st.session_state['user']['session_token'])
+        del st.session_state['user']
+        st.rerun()
+    st.divider()
+    
+    # Show user statistics
+    st.subheader("📊 Your Stats")
+    user_id = st.session_state['user']['user_id']
+    
+    # Resume stats
+    resumes = get_user_resumes(user_id)
+    st.metric("Resumes", len(resumes))
+    
+    # Job application stats
+    app_stats = get_application_statistics(user_id)
+    if app_stats:
+        st.metric("Applications", app_stats['total_applications'])
+        st.metric("Success Rate", f"{app_stats['success_rate']:.1f}%")
+    
+    st.divider()
+    
+    # Quick actions
+    st.subheader("⚡ Quick Actions")
+    
+    if st.button("📄 My Resumes", use_container_width=True):
+        st.session_state.show_resumes = True
+        st.session_state.show_jobs = False
+        st.rerun()
+    
+    if st.button("💼 Job Tracker", use_container_width=True):
+        st.session_state.show_jobs = True
+        st.session_state.show_resumes = False
+        st.rerun()
+    
+    st.divider()
 
 # Custom CSS for better styling
 st.markdown("""
@@ -602,7 +774,144 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Header
-st.markdown('<div class="main-header"><h1>📊 ResumePro Analyzer</h1><p>AI-Powered Resume Analysis & Career Guidance Platform</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header"><h1>🤖 ResumePro AI Analyzer</h1><p>Enhanced AI-Powered Resume Analysis & Career Guidance Platform</p><p>✨ Now with Free AI Models & Advanced ML Analysis</p></div>', unsafe_allow_html=True)
+
+# ============================================================================
+# SHOW RESUME HISTORY OR JOB TRACKER IF REQUESTED
+# ============================================================================
+if st.session_state.get('show_resumes', False):
+    st.markdown("---")
+    st.header("📄 My Resume History")
+    
+    user_id = st.session_state['user']['user_id']
+    resumes = get_user_resumes(user_id)
+    
+    if resumes:
+        for resume in resumes:
+            with st.expander(f"📄 {resume['resume_name']} - {resume['uploaded_at']}", expanded=True):
+                col1, col2, col3 = st.columns(3)
+                col1.metric("Versions", resume['version_count'])
+                col2.metric("Analyses", resume['analysis_count'])
+                col3.metric("Size", f"{resume['file_size'] / 1024:.1f} KB")
+                
+                # Show analysis history
+                st.subheader("Analysis History")
+                history = get_analysis_history(resume['resume_id'])
+                if history:
+                    history_data = []
+                    for h in history:
+                        history_data.append({
+                            'Job Title': h['job_title'],
+                            'Score': f"{h['selection_probability']:.1f}%",
+                            'Date': h['analyzed_at']
+                        })
+                    st.dataframe(pd.DataFrame(history_data), use_container_width=True, hide_index=True)
+                else:
+                    st.info("No analysis history yet")
+    else:
+        st.info("No resumes uploaded yet. Upload your first resume below!")
+    
+    if st.button("❌ Close Resume History", use_container_width=True):
+        st.session_state.show_resumes = False
+        st.rerun()
+    
+    st.stop()  # Stop rendering the rest of the page
+
+if st.session_state.get('show_jobs', False):
+    st.markdown("---")
+    st.header("💼 Job Application Tracker")
+    
+    user_id = st.session_state['user']['user_id']
+    
+    # Add new application form
+    with st.expander("➕ Add New Job Application", expanded=False):
+        with st.form("add_job_form"):
+            col1, col2 = st.columns(2)
+            with col1:
+                company_name = st.text_input("Company Name *")
+                job_title_app = st.text_input("Job Title *")
+                job_url = st.text_input("Job URL")
+            with col2:
+                application_date = st.date_input("Application Date", value=date.today())
+                status = st.selectbox("Status", ["Applied", "Interview", "Offer", "Rejected"])
+                location = st.text_input("Location")
+            
+            notes = st.text_area("Notes")
+            
+            if st.form_submit_button("Add Application", use_container_width=True):
+                if company_name and job_title_app:
+                    app_data = {
+                        'company_name': company_name,
+                        'job_title': job_title_app,
+                        'job_url': job_url,
+                        'application_date': application_date,
+                        'status': status,
+                        'location': location,
+                        'notes': notes
+                    }
+                    success, app_id, msg = add_job_application(user_id, app_data)
+                    if success:
+                        st.success(f"✅ {msg}")
+                        st.rerun()
+                    else:
+                        st.error(f"❌ {msg}")
+                else:
+                    st.error("Company Name and Job Title are required")
+    
+    # Show statistics
+    app_stats = get_application_statistics(user_id)
+    if app_stats and app_stats['total_applications'] > 0:
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Total Applications", app_stats['total_applications'])
+        col2.metric("Active", app_stats['active_applications'])
+        col3.metric("Success Rate", f"{app_stats['success_rate']:.1f}%")
+        col4.metric("Avg Days to Offer", f"{app_stats['avg_days_to_offer']:.0f}")
+    
+    # Show applications
+    st.subheader("All Applications")
+    applications = get_user_applications(user_id)
+    
+    if applications:
+        for app in applications:
+            with st.expander(f"{app['company_name']} - {app['job_title']} ({app['status']})", expanded=False):
+                col1, col2 = st.columns([2, 1])
+                
+                with col1:
+                    st.write(f"**Status:** {app['status']}")
+                    st.write(f"**Applied:** {app['application_date']}")
+                    if app['location']:
+                        st.write(f"**Location:** {app['location']}")
+                    if app['notes']:
+                        st.write(f"**Notes:** {app['notes']}")
+                
+                with col2:
+                    new_status = st.selectbox(
+                        "Update Status",
+                        ["Applied", "Interview", "Offer", "Rejected"],
+                        index=["Applied", "Interview", "Offer", "Rejected"].index(app['status'])
+                        if app['status'] in ["Applied", "Interview", "Offer", "Rejected"] else 0,
+                        key=f"status_{app['application_id']}"
+                    )
+                    
+                    if st.button("Update", key=f"update_{app['application_id']}"):
+                        success, msg = update_application_status(
+                            app['application_id'],
+                            user_id,
+                            new_status
+                        )
+                        if success:
+                            st.success(msg)
+                            st.rerun()
+                        else:
+                            st.error(msg)
+    else:
+        st.info("No job applications yet. Add your first application above!")
+    
+    if st.button("❌ Close Job Tracker", use_container_width=True):
+        st.session_state.show_jobs = False
+        st.rerun()
+    
+    st.stop()  # Stop rendering the rest of the page
 
 # Main layout with better proportions
 col1, col2, col3 = st.columns([2, 1, 2])
@@ -661,8 +970,15 @@ with col1:
 # Middle column - Upload and Analyze
 with col2:
     st.markdown('<div class="section-card">', unsafe_allow_html=True)
-    st.subheader("📄 Resume Upload")
+    st.subheader("🤖 AI Features")
     
+    # AI Features Toggle
+    enable_ai = st.checkbox("Enable AI Analysis", value=True, help="Use free AI models for enhanced analysis")
+    enable_ml = st.checkbox("Enable ML Scoring", value=True, help="Use machine learning for better scoring")
+    
+    st.markdown("---")
+    st.subheader("📄 Resume Upload")
+    #file upload 
     uploaded_file = st.file_uploader(
         "Choose your resume file",
         type=['pdf', 'docx'],
@@ -691,13 +1007,28 @@ with col2:
                             'education_level': education_level
                         }
                         
+                        # Save resume to database
+                        user_id = st.session_state['user']['user_id']
+                        success, resume_id, msg = save_resume(
+                            user_id=user_id,
+                            resume_name=uploaded_file.name,
+                            file_path=f"uploads/{uploaded_file.name}",
+                            file_size=uploaded_file.size,
+                            file_type=uploaded_file.name.split('.')[-1],
+                            raw_text=raw_text,
+                            extracted_data=resume_data
+                        )
+                        
+                        if success:
+                            st.session_state.current_resume_id = resume_id
+                        
                         # Store in session state
                         st.session_state.resume_data = resume_data
                         st.session_state.job_description = job_description
                         st.session_state.job_requirements = job_requirements
                         st.session_state.analyzed = True
                         
-                        st.success("✅ Analysis complete!")
+                        st.success("✅ Analysis complete! Resume saved to database.")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Right column - Resume Summary
@@ -720,6 +1051,25 @@ with col3:
         if 'job_requirements' in st.session_state:
             gaps = analyze_resume_gaps(resume_data, st.session_state.job_description, st.session_state.job_requirements)
             selection_probability = calculate_selection_probability(resume_data, st.session_state.job_requirements, gaps)
+            
+            # Save analysis to database
+            if 'current_resume_id' in st.session_state and 'analysis_saved' not in st.session_state:
+                analysis_results = {
+                    'selection_probability': selection_probability,
+                    'missing_skills': gaps.get('missing_skills', []),
+                    'strengths': gaps.get('matching_skills', []),
+                    'weaknesses': gaps.get('missing_skills', []),
+                    'suggestions': []
+                }
+                
+                save_analysis(
+                    resume_id=st.session_state.current_resume_id,
+                    version_id=None,
+                    job_title=st.session_state.get('job_title', 'Unknown'),
+                    job_description=st.session_state.job_description,
+                    analysis_results=analysis_results
+                )
+                st.session_state.analysis_saved = True
             
             st.markdown("---")
             st.subheader("🔍 Quick Analysis")
@@ -771,15 +1121,23 @@ if 'resume_data' in st.session_state and st.session_state.analyzed:
 # Chatbot interface
 if 'analyzed' in st.session_state and st.session_state.analyzed:
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-    st.subheader("💬 Chat with ResumePro Advisor")
+    st.subheader("🤖 Chat with AI Career Advisor")
+    
+    # AI Status
+    if enable_ai:
+        st.success("✅ AI Analysis Enabled - Enhanced responses with free AI models")
+    else:
+        st.info("ℹ️ Basic Analysis Mode - Standard rule-based responses")
     
     # Initialize chat history
     if "messages" not in st.session_state:
         st.session_state.messages = []
         # Add welcome message
+        welcome_msg = "🤖 Hi! I'm your AI Career Advisor powered by free AI models! I've analyzed your resume against the job description. Ask me anything about improving your resume! Try asking:\n\n• 'How can I improve my resume?'\n• 'Analyze my skills'\n• 'Review my experience'\n• 'What's missing?'\n• 'Give me AI insights'\n• 'What are trending skills?'"
+        
         st.session_state.messages.append({
             "role": "assistant",
-            "content": "👋 Hi! I'm your ResumePro Career Advisor. I've analyzed your resume against the job description. Ask me anything about improving your resume! Try asking:\n\n• 'How can I improve my resume?'\n• 'Analyze my skills'\n• 'Review my experience'\n• 'What's missing?'"
+            "content": welcome_msg
         })
     
     # Display chat messages
@@ -824,3 +1182,5 @@ st.markdown("""
     <strong>Example questions:</strong> "How can I improve my resume?" • "Will I be selected?" • "Give me an honest review"
 </div>
 """, unsafe_allow_html=True)
+
+# Duplicate sections removed - they are now at the top of the page
