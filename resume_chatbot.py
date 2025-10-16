@@ -463,8 +463,8 @@ def chatbot_response(user_message, resume_data, job_description, job_requirement
     """Generate enhanced chatbot response with AI features"""
     
     # Initialize AI analyzer
-    if 'ai_analyzer' not in st.session_state:
-        st.session_state.ai_analyzer = FreeAIAnalyzer()
+    # if 'ai_analyzer' not in st.session_state:
+    #     st.session_state.ai_analyzer = FreeAIAnalyzer()  # Temporarily disabled
     
     # Analyze resume gaps
     gaps = analyze_resume_gaps(resume_data, job_description, job_requirements)
@@ -472,32 +472,33 @@ def chatbot_response(user_message, resume_data, job_description, job_requirement
     selection_probability = calculate_selection_probability(resume_data, job_requirements, gaps)
     
     # Get AI-powered analysis
-    ai_analysis = st.session_state.ai_analyzer.advanced_resume_analysis(
-        ' '.join([str(v) for v in resume_data.values() if isinstance(v, (str, list))]),
-        job_description
-    )
+    # ai_analysis = st.session_state.ai_analyzer.advanced_resume_analysis(
+    #     ' '.join([str(v) for v in resume_data.values() if isinstance(v, (str, list))]),
+    #     job_description
+    # )
+    ai_analysis = {'similarity_score': 0, 'missing_keywords': [], 'strengths': [], 'improvements': []}
     
-    # Try AI-powered response first
-    try:
-        ai_response = st.session_state.ai_analyzer.enhanced_chatbot_response(
-            user_message, resume_data, job_requirements
-        )
-        
-        # Add AI insights
-        ai_insights = st.session_state.ai_analyzer.generate_ai_insights(resume_data, job_requirements)
-        
-        # Combine AI response with insights
-        enhanced_response = f"{ai_response}\n\n"
-        if ai_insights:
-            enhanced_response += "🎯 **AI Insights:**\n"
-            for insight in ai_insights[:3]:
-                enhanced_response += f"• {insight}\n"
-        
-        return enhanced_response
-        
-    except Exception as e:
-        st.warning(f"AI response failed: {str(e)}")
-        # Fallback to original logic
+    # Try AI-powered response first (Temporarily disabled)
+    # try:
+    #     ai_response = st.session_state.ai_analyzer.enhanced_chatbot_response(
+    #         user_message, resume_data, job_requirements
+    #     )
+    #     
+    #     # Add AI insights
+    #     ai_insights = st.session_state.ai_analyzer.generate_ai_insights(resume_data, job_requirements)
+    #     
+    #     # Combine AI response with insights
+    #     enhanced_response = f"{ai_response}\n\n"
+    #     if ai_insights:
+    #         enhanced_response += "🎯 **AI Insights:**\n"
+    #         for insight in ai_insights[:3]:
+    #             enhanced_response += f"• {insight}\n"
+    #     
+    #     return enhanced_response
+    #     
+    # except Exception as e:
+    #     st.warning(f"AI response failed: {str(e)}")
+    #     # Fallback to original logic
     
     # Common user questions and responses (fallback)
     if "improve" in user_message.lower() or "better" in user_message.lower():
