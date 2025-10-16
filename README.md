@@ -1,289 +1,311 @@
-# 📊 ResumePro Analyzer
+# 🎯 CareerMatch AI - Resume Screener Agent
 
-**AI-Powered Resume Analysis & Career Guidance Platform**
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red.svg)](https://streamlit.io)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
+[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-green.svg)](https://github.com/features/actions)
 
-[![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
-[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org/)
-[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Prachi5555/RESUME_ANALYZER)
+An AI-powered resume screening web application designed to automate and enhance the candidate selection process for recruiters and HR professionals. Built with modern cloud-native architecture and CI/CD automation.
 
----
+## ✨ Features
 
-## 🚀 **Live Demo**
+- 🤖 **AI-Powered Analysis:** Advanced NLP and ML models for intelligent resume screening
+- 📄 **Multi-Format Support:** Parse PDF, DOCX, and text resumes
+- 🔍 **Smart Matching:** Automatically match candidates to job requirements
+- 👤 **User Authentication:** Secure login and user management system
+- 📊 **Job Tracking:** Track and manage job postings and applications
+- 💬 **AI Chatbot:** Interactive resume analysis and Q&A
+- 🎨 **Modern UI:** Clean, responsive Streamlit interface
+- 🐳 **Docker Ready:** Containerized for easy deployment
+- 🚀 **CI/CD Pipeline:** Automated testing and deployment
+- ☁️ **Cloud Native:** Deploy to Railway, Render, AWS, Azure, or GCP
 
-**Deployed on Streamlit Cloud:** [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://your-app-url.streamlit.app)
+## 🏗️ Tech Stack
 
----
+- **Frontend:** Streamlit
+- **Backend:** Python 3.11
+- **Database:** MySQL 8.0
+- **AI/ML:** Transformers, Sentence-Transformers, spaCy, NLTK
+- **Containerization:** Docker & Docker Compose
+- **CI/CD:** GitHub Actions
+- **Cloud Platforms:** Railway, Render, AWS, Azure, GCP
 
-## 📋 **Overview**
+## 🚀 Quick Start
 
-ResumePro Analyzer is an intelligent resume analysis platform that helps job seekers optimize their resumes for specific job positions. The application uses AI-powered analysis to provide personalized feedback, skill gap identification, and selection probability calculations.
+### Prerequisites
 
-### **Key Features:**
-- 🔍 **Smart Resume Parsing** - Extract text from PDF and DOCX files
-- 🎯 **Job Matching** - Compare resume against job requirements
-- 🤖 **AI Chatbot** - Interactive career guidance and advice
-- 📊 **Selection Probability** - Calculate chances of getting selected
-- 💡 **Improvement Suggestions** - Actionable recommendations
-- 🎨 **Modern UI** - Beautiful, responsive interface
+- Python 3.11+
+- MySQL 8.0+
+- Git
+- Docker (optional, for containerized deployment)
 
----
-
-## 🛠️ **Technologies Used**
-
-| Technology | Purpose | Version |
-|------------|---------|---------|
-| **Streamlit** | Web Application Framework | Latest |
-| **Python** | Backend Logic | 3.9+ |
-| **PyMuPDF** | PDF Text Extraction | Latest |
-| **python-docx** | Word Document Processing | Latest |
-| **Pandas** | Data Manipulation | Latest |
-
----
-
-## 📁 **Project Structure**
-
-```
-RESUME_ANALYZER/
-├── 📄 resume_chatbot.py      # Main Streamlit application
-├── 📄 resume_parser.py       # Text extraction module
-├── 📄 requirements.txt       # Python dependencies
-├── 📄 .gitignore            # Git ignore file
-└── 📄 README.md             # Project documentation
-```
-
----
-
-## 🚀 **Quick Start**
-
-### **Prerequisites:**
-- Python 3.9 or higher
-- pip package manager
-
-### **Installation:**
+### Local Development
 
 1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Prachi5555/CareerMatch-AI.git
+   cd CareerMatch-AI
+   ```
+
+2. **Set up environment:**
+   ```bash
+   # Copy environment template
+   cp .env.example .env
+   
+   # Edit .env with your credentials
+   # Set DB_USER, DB_PASSWORD, etc.
+   ```
+
+3. **Create virtual environment:**
+   ```bash
+   python -m venv venv
+   
+   # Windows
+   venv\Scripts\activate
+   
+   # Linux/Mac
+   source venv/bin/activate
+   ```
+
+4. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+5. **Setup database:**
+   ```bash
+   python setup_mysql.py
+   ```
+
+6. **Run the application:**
+   ```bash
+   streamlit run resume_chatbot.py
+   ```
+
+7. **Access the app:**
+   Open your browser to `http://localhost:8501`
+
+### Docker Deployment
+
 ```bash
-git clone https://github.com/Prachi5555/RESUME_ANALYZER.git
-cd RESUME_ANALYZER
+# Start application with MySQL
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop application
+docker-compose down
 ```
 
-2. **Install dependencies:**
+## 📦 Project Structure
+
+```
+CareerMatch-AI/
+├── .github/
+│   └── workflows/          # CI/CD pipelines
+├── auth.py                 # Authentication system
+├── config.py              # Configuration management
+├── database.py            # Database operations
+├── resume_parser.py       # Resume parsing logic
+├── resume_chatbot.py      # Main Streamlit app
+├── job_tracker.py         # Job tracking features
+├── free_ai_analyzer.py    # AI analysis engine
+├── requirements.txt       # Python dependencies
+├── Dockerfile            # Docker configuration
+├── docker-compose.yml    # Multi-container setup
+├── railway.json          # Railway deployment config
+├── render.yaml           # Render deployment config
+├── .env.example          # Environment template
+└── DEPLOYMENT.md         # Deployment guide
+```
+
+## 🌐 Cloud Deployment
+
+This application is production-ready and can be deployed to multiple cloud platforms:
+
+### Railway (Recommended)
 ```bash
-pip install -r requirements.txt
+# Install Railway CLI
+npm install -g @railway/cli
+
+# Login and deploy
+railway login
+railway up
 ```
 
-3. **Run the application:**
+### Render
+- Push to GitHub
+- Connect repository in Render dashboard
+- Auto-deploys using `render.yaml`
+
+### Docker-based Platforms (AWS, Azure, GCP)
 ```bash
-streamlit run resume_chatbot.py
+docker build -t resume-screener .
+# Push to your container registry
+# Deploy using platform-specific tools
 ```
 
-4. **Open your browser:**
+📖 **Full deployment guide:** See [DEPLOYMENT.md](DEPLOYMENT.md)
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env` file based on `.env.example`:
+
+```env
+# Database
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=your_user
+DB_PASSWORD=your_password
+DB_NAME=resume_analyzer
+
+# Application
+APP_ENV=development
+DEBUG=True
+SECRET_KEY=your-secret-key
 ```
-http://localhost:8501
+
+### Database Setup
+
+The application automatically creates required tables on first run. To manually setup:
+
+```bash
+python setup_mysql.py
 ```
 
----
+## 🧪 Testing & CI/CD
 
-## 📖 **How to Use**
+### Automated Testing
 
-### **Step 1: Upload Resume**
-- Upload your resume in PDF or DOCX format
-- Maximum file size: 10MB
+GitHub Actions automatically runs tests on every push:
+- Code quality checks (flake8, black)
+- Security scanning (bandit)
+- Docker build verification
 
-### **Step 2: Enter Job Details**
-- Enter the job title (auto-generates job description)
-- Or paste custom job description
-- Add required skills and experience level
+### Manual Testing
 
-### **Step 3: Analyze**
-- Click "Analyze Resume" button
-- View selection probability and quick analysis
+```bash
+# Install test dependencies
+pip install pytest flake8 black
 
-### **Step 4: Get AI Guidance**
-- Chat with the AI advisor
-- Ask questions like:
-  - "How can I improve my resume?"
-  - "Will I be selected?"
-  - "Give me an honest review"
-  - "Analyze my skills"
+# Run linting
+flake8 .
 
----
+# Check code formatting
+black --check .
+```
 
-## 🎯 **Supported Job Roles**
+## 📊 Features in Detail
 
-The application includes pre-built templates for:
+### 1. Resume Parsing
+- Extract text from PDF and DOCX files
+- Identify key information (skills, experience, education)
+- Support for multiple resume formats
 
-- 💻 **Software Engineer**
-- 📊 **Data Scientist**
-- 🎨 **Frontend Developer**
-- ⚙️ **Backend Developer**
-- 🔧 **DevOps Engineer**
-- 📈 **Product Manager**
-- 🎨 **UI/UX Designer**
-- 🤖 **Machine Learning Engineer**
-- 🔒 **Cybersecurity Analyst**
-- ☁️ **Cloud Engineer**
+### 2. AI Analysis
+- Semantic similarity matching
+- Skill extraction and categorization
+- Experience level assessment
+- Education verification
 
----
+### 3. Job Tracking
+- Create and manage job postings
+- Track applications per job
+- Filter and search candidates
 
-## 🔍 **Analysis Features**
+### 4. User Management
+- Secure authentication system
+- User profiles and preferences
+- Role-based access control
 
-### **Resume Parsing:**
-- ✅ Personal Information (Name, Email, Phone)
-- ✅ Education Details
-- ✅ Work Experience
-- ✅ Skills & Technologies
-- ✅ Projects & Certifications
+## 🛠️ Development
 
-### **Gap Analysis:**
-- 🔍 **Skills Matching** - Identify missing required skills
-- 💼 **Experience Assessment** - Evaluate work experience quality
-- 🎓 **Education Verification** - Check education requirements
-- 🚀 **Project Relevance** - Analyze project alignment
+### Adding New Features
 
-### **Scoring System:**
-- **Skills Match:** 40% weight
-- **Experience Quality:** 30% weight
-- **Education Match:** 15% weight
-- **Projects Quality:** 15% weight
-- **Certifications Bonus:** +5%
+1. Create a feature branch
+2. Make your changes
+3. Run tests locally
+4. Submit a pull request
 
----
+### Code Style
 
-## 💬 **AI Chatbot Features**
+- Follow PEP 8 guidelines
+- Use type hints where applicable
+- Add docstrings to functions
+- Format code with `black`
 
-The intelligent chatbot can help with:
+## 🐛 Troubleshooting
 
-- 📈 **Resume Improvement** - Specific suggestions for enhancement
-- 🎯 **Selection Probability** - Realistic assessment of chances
-- 🔧 **Skills Analysis** - Identify skill gaps and recommendations
-- 💼 **Experience Review** - Tips for better experience descriptions
-- 🚀 **Project Advice** - Guidance on relevant projects
-- 📚 **Career Guidance** - General career advice
+### Common Issues
 
----
+**Database Connection Error:**
+```bash
+# Check MySQL is running
+mysql -u root -p
 
-## 🎨 **Screenshots**
+# Verify credentials in .env file
+```
 
-### **Main Interface:**
-![Main Interface](https://via.placeholder.com/800x400/667eea/ffffff?text=ResumePro+Analyzer+Interface)
+**Module Not Found:**
+```bash
+# Reinstall dependencies
+pip install -r requirements.txt --force-reinstall
+```
 
-### **Analysis Results:**
-![Analysis Results](https://via.placeholder.com/800x400/764ba2/ffffff?text=Resume+Analysis+Results)
+**Docker Issues:**
+```bash
+# Clear Docker cache
+docker system prune -a
 
-### **AI Chatbot:**
-![AI Chatbot](https://via.placeholder.com/800x400/28a745/ffffff?text=AI+Career+Advisor)
+# Rebuild containers
+docker-compose up --build
+```
 
----
+## 📈 Roadmap
 
-## 🔧 **Configuration**
+- [ ] Advanced analytics dashboard
+- [ ] Bulk resume upload
+- [ ] Email notifications
+- [ ] API endpoints for integrations
+- [ ] Multi-language support
+- [ ] Resume template matching
+- [ ] Interview scheduling integration
 
-### **File Upload Limits:**
-- Maximum file size: 10MB
-- Supported formats: PDF, DOCX
-- Automatic text extraction
+## 🤝 Contributing
 
-### **Job Templates:**
-- Pre-built templates for 10+ job roles
-- Custom job descriptions supported
-- Auto-generated skills and requirements
+Contributions are welcome! Please follow these steps:
 
----
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## 🚀 **Deployment**
+## 📄 License
 
-### **Streamlit Cloud (Recommended):**
-1. Fork this repository
-2. Go to [Streamlit Cloud](https://share.streamlit.io/)
-3. Connect your GitHub account
-4. Select this repository
-5. Deploy with one click
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-### **Other Platforms:**
-- **Heroku:** Use the included Procfile
-- **Railway:** Auto-detect Python app
-- **Google Cloud:** Use app.yaml configuration
-- **AWS:** Deploy via Elastic Beanstalk
+## 👥 Authors
 
----
+**Prachi5555** - *Initial work* - [GitHub](https://github.com/Prachi5555)
 
-## 🤝 **Contributing**
+## 🙏 Acknowledgments
 
-We welcome contributions! Here's how you can help:
+- Streamlit for the amazing web framework
+- HuggingFace for transformer models
+- The open-source community
 
-1. **Fork the repository**
-2. **Create a feature branch:** `git checkout -b feature/amazing-feature`
-3. **Commit your changes:** `git commit -m 'Add amazing feature'`
-4. **Push to the branch:** `git push origin feature/amazing-feature`
-5. **Open a Pull Request**
+## 📞 Support
 
-### **Contribution Areas:**
-- 🐛 Bug fixes
-- ✨ New features
-- 📚 Documentation improvements
-- 🎨 UI/UX enhancements
-- 🔧 Performance optimizations
+- 📧 Create an issue for bug reports
+- 💬 Discussions for questions and ideas
+- 📚 Check [DEPLOYMENT.md](DEPLOYMENT.md) for deployment help
 
 ---
 
-## 📝 **License**
+**⭐ Star this repository if you find it helpful!**
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 👨‍💻 **Author**
-
-**Prachi5555**
-- GitHub: [@Prachi5555](https://github.com/Prachi5555)
-- Project: [RESUME_ANALYZER](https://github.com/Prachi5555/RESUME_ANALYZER)
-
----
-
-## 🙏 **Acknowledgments**
-
-- **Streamlit** team for the amazing framework
-- **PyMuPDF** for PDF processing capabilities
-- **python-docx** for Word document support
-- **Open source community** for inspiration and support
-
----
-
-## 📊 **Project Stats**
-
-![GitHub stars](https://img.shields.io/github/stars/Prachi5555/RESUME_ANALYZER?style=social)
-![GitHub forks](https://img.shields.io/github/forks/Prachi5555/RESUME_ANALYZER?style=social)
-![GitHub issues](https://img.shields.io/github/issues/Prachi5555/RESUME_ANALYZER)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/Prachi5555/RESUME_ANALYZER)
-
----
-
-## 🔮 **Future Enhancements**
-
-- [ ] **Multi-language Support** - Support for resumes in different languages
-- [ ] **Advanced Analytics** - Detailed performance metrics
-- [ ] **Resume Templates** - Built-in resume templates
-- [ ] **Export Features** - Export analysis reports
-- [ ] **API Integration** - REST API for third-party integrations
-- [ ] **Mobile App** - Native mobile application
-- [ ] **AI Model Training** - Custom ML models for better analysis
-
----
-
-## 📞 **Support**
-
-If you encounter any issues or have questions:
-
-1. **Check the [Issues](https://github.com/Prachi5555/RESUME_ANALYZER/issues) page**
-2. **Create a new issue** with detailed description
-3. **Contact the maintainer** via GitHub
-
----
-
-<div align="center">
-
-**⭐ Star this repository if you found it helpful!**
-
-**Made with ❤️ by [Prachi5555](https://github.com/Prachi5555)**
-
-</div>
+*Built with ❤️ by Prachi5555*

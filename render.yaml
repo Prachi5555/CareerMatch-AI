@@ -1,0 +1,47 @@
+services:
+  # Web Application
+  - type: web
+    name: resume-screener
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run resume_chatbot.py --server.port=$PORT --server.address=0.0.0.0
+    healthCheckPath: /_stcore/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.6
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: False
+      - key: DB_HOST
+        fromDatabase:
+          name: resume-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: resume-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: resume-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: resume-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: resume-db
+          property: database
+      - key: SECRET_KEY
+        generateValue: true
+    autoDeploy: true
+
+  # MySQL Database
+databases:
+  - name: resume-db
+    databaseName: resume_analyzer
+    plan: free
+    region: oregon
